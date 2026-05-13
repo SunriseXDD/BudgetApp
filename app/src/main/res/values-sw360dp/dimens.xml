@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="budgets_screen_horizontal_padding">16dp</dimen>
+    <dimen name="budgets_title_top_margin">18dp</dimen>
+    <dimen name="budgets_search_height">44dp</dimen>
+    <dimen name="budgets_card_height">86dp</dimen>
+    <dimen name="budgets_action_row_height">44dp</dimen>
+</resources>

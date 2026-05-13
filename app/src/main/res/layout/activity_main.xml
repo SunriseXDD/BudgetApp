@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
+
+    <LinearLayout
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_bottom_nav"
+        android:elevation="6dp"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="@dimen/bottom_nav_padding_bottom">
+
+        <LinearLayout
+            android:id="@+id/nav_tab_budgets"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <View
+                android:id="@+id/indicator_budgets"
+                android:layout_width="36dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_nav_indicator"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/iv_nav_budgets"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_nav_home_24"
+                android:tint="@color/primary_warm"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tv_nav_budgets"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Бюджеты"
+                android:textColor="@color/primary_warm"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_transactions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <View
+                android:id="@+id/indicator_transactions"
+                android:layout_width="36dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_nav_indicator"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/iv_nav_transactions"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_nav_card_24"
+                android:tint="@color/bottom_nav_inactive"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tv_nav_transactions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Транзакции"
+                android:textColor="@color/bottom_nav_inactive"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_reports"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <View
+                android:id="@+id/indicator_reports"
+                android:layout_width="36dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_nav_indicator"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/iv_nav_reports"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_nav_chart_24"
+                android:tint="@color/bottom_nav_inactive"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tv_nav_reports"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Отчеты"
+                android:textColor="@color/bottom_nav_inactive"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tab_profile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
+
+            <View
+                android:id="@+id/indicator_profile"
+                android:layout_width="36dp"
+                android:layout_height="3dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_nav_indicator"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/iv_nav_profile"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_nav_person_24"
+                android:tint="@color/bottom_nav_inactive"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tv_nav_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Профиль"
+                android:textColor="@color/bottom_nav_inactive"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

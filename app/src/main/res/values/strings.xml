@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">BudgetApp</string>
+    <string name="add_budget">Добавить бюджет</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="invite_code_hint">Код приглашения</string>
+    <string name="join_budget_by_code">Присоединиться</string>
+    <string name="join_budget_help">Чужой бюджет — по коду из приглашения</string>
+    <string-array name="transaction_types">
+        <item>INCOME</item>
+        <item>EXPENSE</item>
+    </string-array>
+    <string-array name="budget_categories">
+        <item>Семейный бюджет</item>
+        <item>Путешествие</item>
+        <item>Покупки</item>
+        <item>Автомобиль</item>
+        <item>Дом</item>
+        <item>Развлечения</item>
+        <item>Здоровье</item>
+        <item>Прочее</item>
+    </string-array>
+    <string-array name="transaction_categories">
+        <item>Продукты</item>
+        <item>Транспорт</item>
+        <item>Кафе и рестораны</item>
+        <item>Коммунальные услуги</item>
+        <item>Покупки</item>
+        <item>Здоровье</item>
+        <item>Развлечения</item>
+        <item>Путешествия</item>
+        <item>Зарплата</item>
+        <item>Прочее</item>
+        <item>Банковская выписка</item>
+    </string-array>
+    <string name="import_from_pdf">Импорт из PDF</string>
+    <string name="import_pdf_confirm">Найдено %1$d операций. Добавить в бюджет «%2$s»?</string>
+    <string name="import_pdf_empty">Не удалось найти операции. Поддерживаются PDF выписки Альфа-Банка и Сбербанка.</string>
+    <string name="import_pdf_read_error">Не удалось прочитать PDF</string>
+    <string name="import_pdf_adding">Импорт…</string>
+    <string name="import_pdf_done">Добавлено операций: %1$d</string>
+    <string name="category_bank_statement">Банковская выписка</string>
+</resources>

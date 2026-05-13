@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/authFragment">
+
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.Popov.budgetapp.ui.AuthFragment"
+        android:label="Авторизация">
+        <action
+            android:id="@+id/action_authFragment_to_budgetsFragment"
+            app:destination="@id/budgetsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/budgetsFragment"
+        android:name="com.Popov.budgetapp.ui.BudgetsFragment"
+        android:label="Бюджеты" />
+
+    <fragment
+        android:id="@+id/transactionsFragment"
+        android:name="com.Popov.budgetapp.ui.TransactionsFragment"
+        android:label="Транзакции">
+        <action
+            android:id="@+id/action_transactionsFragment_to_budgetMembersFragment"
+            app:destination="@id/budgetMembersFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/budgetMembersFragment"
+        android:name="com.Popov.budgetapp.ui.BudgetMembersFragment"
+        android:label="Участники" />
+
+    <fragment
+        android:id="@+id/reportsFragment"
+        android:name="com.Popov.budgetapp.ui.ReportsFragment"
+        android:label="Отчеты" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.Popov.budgetapp.ui.ProfileFragment"
+        android:label="Профиль" />
+</navigation>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "631678253998",
+    "project_id": "budgetapp-3494b",
+    "storage_bucket": "budgetapp-3494b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:631678253998:android:fcddffe5383ee5b577263f",
+        "android_client_info": {
+          "package_name": "com.Popov.budgetapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR1Eo3jvNSJEJQpATdADMDGTLYTwKzEfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
