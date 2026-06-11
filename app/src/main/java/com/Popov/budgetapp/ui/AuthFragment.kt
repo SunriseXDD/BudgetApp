@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.Popov.budgetapp.R
 import com.Popov.budgetapp.data.FirebaseRepository
+import com.Popov.budgetapp.data.userMessage
 import com.Popov.budgetapp.databinding.FragmentAuthBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -22,10 +23,12 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAuthBinding.bind(view)
         if (repo.currentUid() != null) {
-            // Иначе navigate() может вызваться до полной инициализации NavController у NavHost
             view.post {
                 if (!isAdded) return@post
-                findNavController().navigate(R.id.budgetsFragment)
+                repo.ensureUserProfile {
+                    if (!isAdded) return@ensureUserProfile
+                    navigateAfterAuth(repo)
+                }
             }
             return
         }
@@ -54,20 +57,18 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
                     Toast.makeText(requireContext(), "Письмо для сброса пароля отправлено", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), it.message ?: "Ошибка", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_SHORT).show()
                 }
         }
 
-        binding.btnLogin.setOnClickListener {
-            auth(isRegister = false)
-        }
+        binding.btnLogin.setOnClickListener { login() }
 
         binding.btnRegister.setOnClickListener {
-            auth(isRegister = true)
+            findNavController().navigate(R.id.action_authFragment_to_registerFragment)
         }
     }
 
-    private fun auth(isRegister: Boolean) {
+    private fun login() {
         val email = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
         if (email.isBlank() || password.length < 6) {
@@ -75,17 +76,14 @@ class AuthFragment : Fragment(R.layout.fragment_auth) {
             return
         }
         binding.btnLogin.isEnabled = false
-        binding.btnRegister.isEnabled = false
-        val callback: (Result<Unit>) -> Unit = { result ->
+        repo.login(email, password) { result ->
             binding.btnLogin.isEnabled = true
-            binding.btnRegister.isEnabled = true
             result.onSuccess {
-                findNavController().navigate(R.id.budgetsFragment)
+                navigateAfterAuth(repo)
             }.onFailure {
-                Toast.makeText(requireContext(), it.message ?: "Ошибка авторизации", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_SHORT).show()
             }
         }
-        if (isRegister) repo.register(email, password, callback) else repo.login(email, password, callback)
     }
 
     override fun onDestroyView() {

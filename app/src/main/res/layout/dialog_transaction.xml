@@ -10,7 +10,7 @@
         android:id="@+id/et_title"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="@drawable/bg_input"
+        android:background="@drawable/bg_transaction_field"
         android:hint="Описание"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_secondary" />
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_input"
+        android:background="@drawable/bg_transaction_field"
         android:hint="Сумма"
         android:inputType="numberDecimal"
         android:textColor="@color/text_primary"
@@ -31,15 +31,17 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_input"
-        android:entries="@array/transaction_categories" />
+        android:background="@drawable/bg_transaction_field"
+        android:entries="@array/transaction_categories"
+        android:textColor="@color/text_primary" />
 
     <Spinner
         android:id="@+id/sp_type"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_input"
-        android:entries="@array/transaction_types" />
+        android:background="@drawable/bg_transaction_field"
+        android:entries="@array/transaction_types"
+        android:textColor="@color/text_primary" />
 
 </LinearLayout>

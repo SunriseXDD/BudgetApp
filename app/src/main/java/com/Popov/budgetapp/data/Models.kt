@@ -7,8 +7,12 @@ enum class TransactionType {
 
 data class AppUser(
     val uid: String = "",
-    val email: String = ""
-)
+    val email: String = "",
+    val nickname: String = "",
+) {
+    val displayName: String
+        get() = nickname.trim().ifBlank { "Участник" }
+}
 
 data class Budget(
     val id: String = "",
@@ -17,8 +21,11 @@ data class Budget(
     val limit: Double = 0.0,
     val owners: List<String> = emptyList(),
     val members: List<String> = emptyList(),
-    val inviteCode: String = ""
-)
+    val inviteCode: String = "",
+) {
+    fun isOwner(uid: String): Boolean =
+        uid.isNotBlank() && (uid in owners || (owners.isEmpty() && uid in members))
+}
 
 data class TransactionItem(
     val id: String = "",

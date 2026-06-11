@@ -13,10 +13,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.Popov.budgetapp.R
 import com.Popov.budgetapp.data.FirebaseRepository
+import com.Popov.budgetapp.data.userMessage
 import com.Popov.budgetapp.data.TransactionItem
 import com.Popov.budgetapp.data.TransactionType
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import com.Popov.budgetapp.databinding.DialogTransactionBinding
+import com.Popov.budgetapp.databinding.DialogTransactionFiltersBinding
 import com.Popov.budgetapp.databinding.FragmentTransactionsBinding
+import com.Popov.budgetapp.notification.NotificationPrefs
+import com.Popov.budgetapp.notification.TransactionActivityTracker
 import com.Popov.budgetapp.pdf.BankStatementParsers
 import com.Popov.budgetapp.pdf.ParsedStatementOperation
 import com.Popov.budgetapp.pdf.PdfTextExtractor
@@ -36,8 +42,12 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
     private val repo = FirebaseRepository()
 
     private val filterCal: Calendar = Calendar.getInstance()
+    private var transactionFilters = TransactionFilters()
+    private var authorSpinnerLabels: List<String> = emptyList()
+    private var authorSpinnerUids: List<String?> = emptyList()
     private var fullList: List<TransactionItem> = emptyList()
     private var transactionsListener: ListenerRegistration? = null
+    private var subscribedBudgetId: String = ""
 
     private val adapter = TransactionAdapter(
         currentUid = { repo.currentUid().orEmpty() },
@@ -48,7 +58,7 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
                 .setPositiveButton("Удалить") { _, _ ->
                     repo.deleteTransaction(item.id) { result ->
                         result.onFailure {
-                            Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -70,17 +80,14 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentTransactionsBinding.bind(view)
 
-        binding.tvToolbarTitle.text = SessionStore.selectedBudgetName.ifBlank { "Транзакции" }
         binding.rvTransactions.layoutManager = LinearLayoutManager(requireContext())
         binding.rvTransactions.adapter = adapter
 
         binding.btnMembers.setOnClickListener {
-            findNavController().navigate(R.id.budgetMembersFragment)
+            findNavController().navigate(R.id.action_transactionsFragment_to_budgetMembersFragment)
         }
         binding.btnAddTransactionWide.setOnClickListener { showTransactionDialog(null) }
-        binding.btnFilter.setOnClickListener {
-            Toast.makeText(requireContext(), "Фильтры скоро появятся", Toast.LENGTH_SHORT).show()
-        }
+        binding.btnFilter.setOnClickListener { showFiltersDialog() }
 
         binding.rowMonthFilter.setOnClickListener {
             val y = filterCal.get(Calendar.YEAR)
@@ -98,39 +105,190 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
             pickPdf.launch(arrayOf("application/pdf"))
         }
 
-        if (SessionStore.selectedBudgetId.isBlank()) {
-            Toast.makeText(requireContext(), "Сначала выберите бюджет", Toast.LENGTH_SHORT).show()
+        updateMonthLabel()
+        ensureTransactionsSubscription(showSelectBudgetHint = true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            ensureTransactionsSubscription(showSelectBudgetHint = false)
+        }
+    }
+
+    private fun ensureTransactionsSubscription(showSelectBudgetHint: Boolean) {
+        binding.tvToolbarTitle.text = SessionStore.selectedBudgetName.ifBlank { "Транзакции" }
+        val budgetId = SessionStore.selectedBudgetId
+        if (budgetId.isBlank()) {
+            if (subscribedBudgetId.isNotEmpty()) {
+                transactionsListener?.remove()
+                transactionsListener = null
+                subscribedBudgetId = ""
+                fullList = emptyList()
+                adapter.submitList(emptyList())
+                updateSummary(emptyList())
+            }
+            if (showSelectBudgetHint) {
+                Toast.makeText(requireContext(), "Сначала выберите бюджет", Toast.LENGTH_SHORT).show()
+            }
             return
         }
-
-        updateMonthLabel()
+        loadMemberNicknames(budgetId)
+        if (budgetId == subscribedBudgetId) return
+        subscribedBudgetId = budgetId
         transactionsListener?.remove()
-        transactionsListener = repo.subscribeTransactions(SessionStore.selectedBudgetId) { result ->
+        fullList = emptyList()
+        adapter.submitList(emptyList())
+        transactionsListener = repo.subscribeTransactions(budgetId) { result ->
             if (_binding == null) return@subscribeTransactions
             result.onSuccess { list ->
                 if (_binding == null) return@onSuccess
                 fullList = list
+                syncLastTransactionActivity(list)
                 refreshFromStored()
             }.onFailure { err ->
                 if (_binding == null) return@onFailure
-                Toast.makeText(requireContext(), err.message, Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), err.userMessage(requireContext()), Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun refreshFromStored() {
-        val filtered = filterByMonth(fullList)
-        adapter.submitList(filtered)
-        updateSummary(filtered)
+    private fun loadMemberNicknames(budgetId: String) {
+        repo.getBudgetMembers(budgetId) { result ->
+            if (_binding == null) return@getBudgetMembers
+            adapter.nicknameByUid = result.getOrNull()
+                ?.associate { it.uid to it.displayName }
+                .orEmpty()
+            adapter.notifyDataSetChanged()
+            if (_binding != null) refreshFromStored()
+        }
     }
 
-    private fun filterByMonth(list: List<TransactionItem>): List<TransactionItem> {
-        val y = filterCal.get(Calendar.YEAR)
-        val m = filterCal.get(Calendar.MONTH)
-        return list.filter { tx ->
-            val c = Calendar.getInstance().apply { timeInMillis = tx.createdAt }
-            c.get(Calendar.YEAR) == y && c.get(Calendar.MONTH) == m
+    private fun refreshFromStored() {
+        val filtered = applyFilters(fullList)
+        adapter.submitList(filtered)
+        updateSummary(filtered)
+        updateFilterButtonState()
+    }
+
+    private fun applyFilters(list: List<TransactionItem>): List<TransactionItem> {
+        val month = filterCal.get(Calendar.YEAR) to filterCal.get(Calendar.MONTH)
+        return transactionFilters.apply(list, repo.currentUid().orEmpty(), month)
+    }
+
+    private fun updateFilterButtonState() {
+        val accent = ContextCompat.getColor(requireContext(), R.color.primary_warm)
+        val muted = ContextCompat.getColor(requireContext(), R.color.icon_muted)
+        ImageViewCompat.setImageTintList(
+            binding.btnFilter,
+            android.content.res.ColorStateList.valueOf(if (transactionFilters.isActive) accent else muted),
+        )
+    }
+
+    private fun showFiltersDialog() {
+        val dialogBinding = DialogTransactionFiltersBinding.inflate(layoutInflater)
+        dialogBinding.spFilterType.setSelection(transactionFilters.type.ordinal)
+
+        val categories = buildCategoryOptions()
+        val categoryAdapter = android.widget.ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            categories,
+        )
+        dialogBinding.spFilterCategory.adapter = categoryAdapter
+        val categoryIndex = categories.indexOfFirst {
+            transactionFilters.category?.equals(it, ignoreCase = true) == true
+        }.coerceAtLeast(0)
+        dialogBinding.spFilterCategory.setSelection(categoryIndex)
+
+        buildAuthorSpinnerOptions()
+        val authorAdapter = android.widget.ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            authorSpinnerLabels,
+        )
+        dialogBinding.spFilterAuthor.adapter = authorAdapter
+        dialogBinding.spFilterAuthor.setSelection(findAuthorSpinnerIndex(transactionFilters.author))
+        dialogBinding.etFilterSearch.setText(transactionFilters.searchQuery)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.filter_title)
+            .setView(dialogBinding.root)
+            .setPositiveButton(R.string.filter_apply) { _, _ ->
+                transactionFilters = readFiltersFromDialog(dialogBinding, categories)
+                val filtered = applyFilters(fullList)
+                adapter.submitList(filtered)
+                updateSummary(filtered)
+                updateFilterButtonState()
+                if (filtered.isEmpty() && fullList.isNotEmpty()) {
+                    Toast.makeText(requireContext(), R.string.filter_no_results, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.filter_reset) { _, _ ->
+                transactionFilters = TransactionFilters()
+                refreshFromStored()
+            }
+            .setNeutralButton("Отмена", null)
+            .show()
+    }
+
+    private fun buildCategoryOptions(): List<String> {
+        val fromData = fullList.map { it.category }.filter { it.isNotBlank() }.distinct().sorted()
+        val preset = resources.getStringArray(R.array.transaction_categories).toList()
+        val merged = (listOf(getString(R.string.filter_all_categories)) + preset + fromData).distinct()
+        return merged
+    }
+
+    private fun buildAuthorSpinnerOptions() {
+        val labels = mutableListOf(getString(R.string.filter_all_authors), getString(R.string.filter_mine_only))
+        val uids = mutableListOf<String?>(null, null)
+        val current = repo.currentUid().orEmpty()
+        adapter.nicknameByUid
+            .filterKeys { uid -> uid != current }
+            .toList()
+            .sortedBy { (_, name) -> name }
+            .forEach { (uid, name) ->
+                labels += name
+                uids += uid
+            }
+        authorSpinnerLabels = labels
+        authorSpinnerUids = uids
+    }
+
+    private fun findAuthorSpinnerIndex(author: TransactionAuthorSelection): Int = when (author) {
+        is TransactionAuthorSelection.All -> 0
+        is TransactionAuthorSelection.Mine -> 1
+        is TransactionAuthorSelection.Member -> {
+            val idx = authorSpinnerUids.indexOf(author.uid)
+            if (idx >= 0) idx else 0
         }
+    }
+
+    private fun readFiltersFromDialog(
+        dialogBinding: DialogTransactionFiltersBinding,
+        categories: List<String>,
+    ): TransactionFilters {
+        val type = TransactionTypeFilter.entries[dialogBinding.spFilterType.selectedItemPosition]
+        val categoryLabel = categories.getOrNull(dialogBinding.spFilterCategory.selectedItemPosition)
+            ?: getString(R.string.filter_all_categories)
+        val category = if (categoryLabel == getString(R.string.filter_all_categories)) null else categoryLabel
+
+        val authorIndex = dialogBinding.spFilterAuthor.selectedItemPosition
+        val author = when (authorIndex) {
+            0 -> TransactionAuthorSelection.All
+            1 -> TransactionAuthorSelection.Mine
+            else -> {
+                val uid = authorSpinnerUids.getOrNull(authorIndex)
+                if (uid != null) TransactionAuthorSelection.Member(uid) else TransactionAuthorSelection.All
+            }
+        }
+
+        return TransactionFilters(
+            type = type,
+            category = category,
+            author = author,
+            searchQuery = dialogBinding.etFilterSearch.text.toString().trim(),
+        )
     }
 
     private fun updateSummary(list: List<TransactionItem>) {
@@ -196,10 +354,11 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
                 if (item == null) {
                     repo.addTransaction(tx) { result ->
                         result.onSuccess {
+                            TransactionActivityTracker.recordTransactionAdded(requireContext())
                             dialog.dismiss()
                         }
                         result.onFailure {
-                            Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
@@ -208,7 +367,7 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
                             dialog.dismiss()
                         }
                         result.onFailure {
-                            Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -259,7 +418,7 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
                 onFailure = {
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.import_pdf_read_error) + ": ${it.message}",
+                        getString(R.string.import_pdf_read_error) + ": ${it.userMessage(requireContext())}",
                         Toast.LENGTH_LONG
                     ).show()
                 },
@@ -286,11 +445,22 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
         repo.addTransactionsBatch(items) { result ->
             result.onSuccess { n ->
                 if (!isAdded) return@addTransactionsBatch
+                val latest = operations.maxOfOrNull { it.bookingDateMillis } ?: System.currentTimeMillis()
+                TransactionActivityTracker.recordTransactionAdded(requireContext(), latest)
                 applyMonthFilterForImportedDates(operations)
                 Toast.makeText(requireContext(), getString(R.string.import_pdf_done, n), Toast.LENGTH_LONG).show()
             }.onFailure {
-                Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), it.userMessage(requireContext()), Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun syncLastTransactionActivity(list: List<TransactionItem>) {
+        if (list.isEmpty()) return
+        val latest = list.maxOf { it.createdAt }
+        val prefs = NotificationPrefs(requireContext())
+        if (latest > prefs.lastTransactionAt) {
+            TransactionActivityTracker.recordTransactionAdded(requireContext(), latest)
         }
     }
 
@@ -302,12 +472,14 @@ class TransactionsFragment : Fragment(R.layout.fragment_transactions) {
         if (_binding != null) {
             updateMonthLabel()
             refreshFromStored()
+            updateFilterButtonState()
         }
     }
 
     override fun onDestroyView() {
         transactionsListener?.remove()
         transactionsListener = null
+        subscribedBudgetId = ""
         super.onDestroyView()
         _binding = null
     }

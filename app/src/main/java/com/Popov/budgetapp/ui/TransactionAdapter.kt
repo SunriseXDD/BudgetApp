@@ -20,6 +20,7 @@ class TransactionAdapter(
     private val onLongClick: (TransactionItem) -> Unit,
 ) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
+    var nicknameByUid: Map<String, String> = emptyMap()
     private val items = mutableListOf<TransactionItem>()
     private val numberFormat = NumberFormat.getNumberInstance(Locale("ru", "RU"))
     private val dateFormat = SimpleDateFormat("d MMMM", Locale("ru", "RU"))
@@ -52,8 +53,7 @@ class TransactionAdapter(
             val author = when {
                 item.createdBy.isBlank() -> ""
                 item.createdBy == uid -> "Вы"
-                item.createdBy.length <= 8 -> item.createdBy
-                else -> item.createdBy.take(6) + "…"
+                else -> nicknameByUid[item.createdBy]?.takeIf { it.isNotBlank() } ?: "Участник"
             }
             binding.tvTransactionSubtitle.text = if (author.isNotEmpty()) {
                 "${item.category} · $author"

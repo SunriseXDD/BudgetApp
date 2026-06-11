@@ -181,7 +181,7 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/bg_button_outline"
-                android:text="Зарегистрироваться"
+                android:text="@string/go_to_register"
                 android:textAllCaps="false"
                 android:textColor="@color/accent_brown"
                 android:textSize="16sp" />

@@ -2,10 +2,9 @@ package com.Popov.budgetapp
 
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.Menu
 import android.view.View
+import android.widget.Toast
 import android.widget.ImageView
-import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -16,14 +15,18 @@ import androidx.core.view.updatePadding
 import androidx.core.widget.ImageViewCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
+import androidx.navigation.NavOptions
 import com.Popov.budgetapp.databinding.ActivityMainBinding
+import com.Popov.budgetapp.ui.SessionStore
+import com.Popov.budgetapp.notification.NotificationPermissionHelper
+import com.Popov.budgetapp.ui.ThemeManager
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+    private lateinit var notificationPermissionHelper: NotificationPermissionHelper
 
     /** Нижний отступ контента над таб-баром (0 на экране входа). */
     private var navHostBottomInsetBasePx = 0
@@ -39,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tabs: List<TabUi>
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeManager.applyStoredTheme(this)
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -54,6 +58,8 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
+        notificationPermissionHelper = NotificationPermissionHelper(this)
+        notificationPermissionHelper.requestOnFirstLaunchIfNeeded()
 
         tabs = listOf(
             TabUi(
@@ -94,7 +100,10 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val signedIn = FirebaseAuth.getInstance().currentUser != null
-            val showBottomNav = signedIn && destination.id != R.id.authFragment
+            val authFlow = destination.id == R.id.authFragment ||
+                destination.id == R.id.registerFragment ||
+                destination.id == R.id.setupNicknameFragment
+            val showBottomNav = signedIn && !authFlow
             binding.bottomNavigation.visibility =
                 if (showBottomNav) View.VISIBLE else View.GONE
             navHostBottomInsetBasePx =
@@ -132,10 +141,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToTab(destId: Int) {
-        val popup = PopupMenu(this, binding.bottomNavigation)
-        popup.menu.clear()
-        val item = popup.menu.add(Menu.NONE, destId, Menu.NONE, "")
-        NavigationUI.onNavDestinationSelected(item, navController)
+        val current = navController.currentDestination?.id ?: return
+        if (current == destId) return
+
+        when (destId) {
+            R.id.budgetsFragment -> {
+                if (navController.popBackStack(R.id.budgetsFragment, false)) return
+                navController.navigate(
+                    R.id.action_global_budgets,
+                    null,
+                    NavOptions.Builder().setLaunchSingleTop(true).build(),
+                )
+            }
+            R.id.transactionsFragment -> {
+                if (SessionStore.selectedBudgetId.isBlank()) {
+                    Toast.makeText(this, "Сначала выберите бюджет", Toast.LENGTH_SHORT).show()
+                    if (current != R.id.budgetsFragment) {
+                        navigateToTab(R.id.budgetsFragment)
+                    }
+                    return
+                }
+                when (current) {
+                    R.id.budgetsFragment ->
+                        navController.navigate(R.id.action_budgetsFragment_to_transactionsFragment)
+                    R.id.profileFragment ->
+                        navController.navigate(R.id.action_profileFragment_to_transactionsFragment)
+                    R.id.transactionsFragment, R.id.budgetMembersFragment -> Unit
+                    else -> {
+                        navController.popBackStack(R.id.budgetsFragment, false)
+                        navController.navigate(R.id.action_budgetsFragment_to_transactionsFragment)
+                    }
+                }
+            }
+            else -> {
+                if (current == R.id.transactionsFragment || current == R.id.budgetMembersFragment) {
+                    navController.popBackStack()
+                }
+                val options = NavOptions.Builder()
+                    .setLaunchSingleTop(true)
+                    .setPopUpTo(R.id.budgetsFragment, inclusive = false, saveState = true)
+                    .build()
+                navController.navigate(destId, null, options)
+            }
+        }
     }
 
     private fun syncTabSelection(destinationId: Int) {

@@ -10,7 +10,7 @@
         android:id="@+id/et_budget_name"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="@drawable/bg_input"
+        android:background="@drawable/bg_transaction_field"
         android:hint="Название бюджета"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_secondary" />
@@ -20,8 +20,8 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_input"
-        android:hint="Лимит"
+        android:background="@drawable/bg_transaction_field"
+        android:hint="@string/budget_goal_hint"
         android:inputType="numberDecimal"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_secondary" />
@@ -31,7 +31,8 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_input"
-        android:entries="@array/budget_categories" />
+        android:background="@drawable/bg_transaction_field"
+        android:entries="@array/budget_categories"
+        android:textColor="@color/text_primary" />
 
 </LinearLayout>

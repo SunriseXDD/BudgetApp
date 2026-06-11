@@ -6,8 +6,8 @@
     <string name="join_budget_by_code">Присоединиться</string>
     <string name="join_budget_help">Чужой бюджет — по коду из приглашения</string>
     <string-array name="transaction_types">
-        <item>INCOME</item>
-        <item>EXPENSE</item>
+        <item>Поступление</item>
+        <item>Списание</item>
     </string-array>
     <string-array name="budget_categories">
         <item>Семейный бюджет</item>
@@ -32,11 +32,115 @@
         <item>Прочее</item>
         <item>Банковская выписка</item>
     </string-array>
+    <string-array name="transaction_filter_types">
+        <item>Все операции</item>
+        <item>Только поступления</item>
+        <item>Только списания</item>
+    </string-array>
+    <string name="filter_all_categories">Все категории</string>
+    <string name="filter_all_authors">Все участники</string>
+    <string name="filter_mine_only">Только мои</string>
+    <string name="filter_type_label">Тип операции</string>
+    <string name="filter_category_label">Категория</string>
+    <string name="filter_author_label">Кто добавил</string>
+    <string name="filter_search_label">Поиск</string>
+    <string name="filter_search_hint">Описание или категория</string>
+    <string name="filter_title">Фильтры</string>
+    <string name="filter_reset">Сбросить</string>
+    <string name="filter_apply">Применить</string>
+    <string name="filter_no_results">Нет транзакций по выбранным фильтрам</string>
+    <string name="filter_active_count">Фильтры: %1$d</string>
     <string name="import_from_pdf">Импорт из PDF</string>
     <string name="import_pdf_confirm">Найдено %1$d операций. Добавить в бюджет «%2$s»?</string>
-    <string name="import_pdf_empty">Не удалось найти операции. Поддерживаются PDF выписки Альфа-Банка и Сбербанка.</string>
+    <string name="import_pdf_empty">Не удалось найти операции. Поддерживаются PDF выписки Яндекс Банка, Т-Банка, Альфа-Банка и Сбербанка.</string>
     <string name="import_pdf_read_error">Не удалось прочитать PDF</string>
     <string name="import_pdf_adding">Импорт…</string>
     <string name="import_pdf_done">Добавлено операций: %1$d</string>
     <string name="category_bank_statement">Банковская выписка</string>
+    <string name="budget_goal_label">Цель</string>
+    <string name="budget_balance_label">Сейчас</string>
+    <string name="budget_goal_hint">Цель накопления, ₽</string>
+    <string name="reports_summary_title">Сводка за период</string>
+    <string name="reports_income">Доходы</string>
+    <string name="reports_expenses">Расходы</string>
+    <string name="reports_balance">Баланс</string>
+    <string name="reports_income_dynamics">Динамика доходов</string>
+    <string name="reports_no_income">Нет доходов за период</string>
+    <string name="reports_savings_rate">Доля сбережений</string>
+    <string name="back">Назад</string>
+    <string name="register_title">Регистрация</string>
+    <string name="register_subtitle">Создайте аккаунт и укажите, как вас видеть в бюджетах</string>
+    <string name="nickname_label">Никнейм</string>
+    <string name="nickname_hint">Как вас называть</string>
+    <string name="password_label">Пароль</string>
+    <string name="password_confirm_label">Повторите пароль</string>
+    <string name="create_account">Создать аккаунт</string>
+    <string name="already_have_account">Уже есть аккаунт? Войти</string>
+    <string name="go_to_register">Создать аккаунт</string>
+    <string name="show_password">Показать пароль</string>
+    <string name="setup_nickname_title">Ваш никнейм</string>
+    <string name="setup_nickname_subtitle">Обязательно для участия в бюджетах. Его увидят другие участники.</string>
+    <string name="continue_btn">Продолжить</string>
+    <string name="change_nickname">Изменить никнейм</string>
+    <string name="change_nickname_title">Никнейм</string>
+    <string name="nickname_changed">Никнейм обновлён</string>
+    <string name="reports_category_detail">Сумма: %1$s\nДоля: %2$d%%</string>
+    <string name="change_password">Сменить пароль</string>
+    <string name="change_password_title">Смена пароля</string>
+    <string name="current_password_hint">Текущий пароль</string>
+    <string name="new_password_hint">Новый пароль</string>
+    <string name="password_changed">Пароль обновлён</string>
+    <string name="notification_settings_title">Уведомления</string>
+    <string name="notification_channel_name">Напоминания Budget</string>
+    <string name="notification_channel_desc">Напоминания о транзакциях и отчётах</string>
+    <string name="notif_switch_master">Включить уведомления</string>
+    <string name="notif_switch_inactive">Нет транзакций 7+ дней</string>
+    <string name="notif_switch_weekly">Совет в начале недели</string>
+    <string name="notif_switch_monthly">Итоги в конце месяца</string>
+    <string name="notif_inactive_title">Давно не было записей</string>
+    <string name="notif_inactive_text">Вы не добавляли транзакции %1$d дней. Зафиксируйте расходы или доходы.</string>
+    <string name="notif_weekly_title">Новая неделя</string>
+    <string name="notif_weekly_text">Проверьте бюджет и добавьте планы на неделю.</string>
+    <string name="notif_monthly_title">Конец месяца</string>
+    <string name="notif_monthly_text">Откройте отчёты и посмотрите, как прошёл месяц.</string>
+    <string name="dark_theme">Тёмная тема</string>
+    <string name="edit_budget">Редактировать</string>
+    <string name="budget_edit_owner_only">Редактировать бюджет может только создатель</string>
+    <string name="invite_members">Пригласить участников</string>
+    <string name="invite_code_copied">Код приглашения скопирован</string>
+    <string name="leave_budget">Выйти из бюджета</string>
+    <string name="leave_budget_title">Выйти из бюджета?</string>
+    <string name="leave_budget_message">Вы перестанете видеть бюджет «%1$s» и его транзакции. Владелец сможет снова пригласить вас по коду.</string>
+    <string name="left_budget">Вы вышли из бюджета</string>
+    <string name="remove_member">Удалить участника</string>
+    <string name="remove_member_title">Удалить участника?</string>
+    <string name="remove_member_message">%1$s будет исключён из бюджета «%2$s».</string>
+    <string name="member_removed">Участник удалён</string>
+    <string name="budget_owner_badge">владелец</string>
+    <string name="delete_budget">Удалить бюджет</string>
+    <string name="budget_deleted">Бюджет удалён</string>
+    <string name="delete_budget_title">Удалить бюджет?</string>
+    <string name="delete_budget_message">Бюджет «%1$s» будет удалён без возможности восстановления. Все транзакции этого бюджета тоже пропадут из приложения.</string>
+    <string name="error_generic">Не удалось выполнить операцию. Попробуйте позже.</string>
+    <string name="error_firestore_permission_denied">Нет доступа к данным. Возможно, у вас нет прав в этом бюджете или нужно обновить правила базы.</string>
+    <string name="error_firestore_unauthenticated">Сессия истекла. Войдите в аккаунт снова.</string>
+    <string name="error_firestore_not_found">Запись не найдена в базе данных.</string>
+    <string name="error_firestore_already_exists">Такая запись уже существует.</string>
+    <string name="error_firestore_unavailable">Сервер временно недоступен. Проверьте интернет и повторите попытку.</string>
+    <string name="error_firestore_timeout">Превышено время ожидания ответа сервера.</string>
+    <string name="error_firestore_quota">Слишком много запросов. Подождите немного и попробуйте снова.</string>
+    <string name="error_firestore_failed_precondition">Операция не может быть выполнена в текущем состоянии данных.</string>
+    <string name="error_firestore_aborted">Операция прервана. Попробуйте ещё раз.</string>
+    <string name="error_firestore_cancelled">Запрос отменён.</string>
+    <string name="error_auth_wrong_password">Неверный email или пароль.</string>
+    <string name="error_auth_user_not_found">Пользователь с таким email не найден.</string>
+    <string name="error_auth_email_in_use">Этот email уже зарегистрирован.</string>
+    <string name="error_auth_weak_password">Пароль слишком простой (минимум 6 символов).</string>
+    <string name="error_auth_invalid_email">Некорректный адрес email.</string>
+    <string name="error_auth_too_many_requests">Слишком много попыток. Подождите и повторите позже.</string>
+    <string name="error_auth_network">Нет связи с сервером. Проверьте интернет.</string>
+    <string name="error_join_budget">Не удалось присоединиться к бюджету.</string>
+    <string name="error_load_members">Не удалось загрузить участников.</string>
+    <string name="error_register">Ошибка регистрации.</string>
+    <string name="error_sign_in">Ошибка входа.</string>
 </resources>

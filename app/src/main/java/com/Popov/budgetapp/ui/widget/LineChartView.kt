@@ -32,8 +32,14 @@ class LineChartView @JvmOverloads constructor(
         strokeWidth = 1f
     }
 
+    var lineColorRes: Int = R.color.chart_line
+        set(value) {
+            field = value
+            applyLineColor()
+            invalidate()
+        }
+
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.chart_line)
         strokeWidth = 4f
         style = Paint.Style.STROKE
         strokeJoin = Paint.Join.ROUND
@@ -44,15 +50,21 @@ class LineChartView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    init {
+        applyLineColor()
+    }
+
+    private fun applyLineColor() {
+        val color = ContextCompat.getColor(context, lineColorRes)
+        linePaint.color = color
+        fillPaint.color = ColorUtils.setAlphaComponent(color, 45)
+    }
+
     private val path = Path()
     private val fillPath = Path()
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        fillPaint.color = ColorUtils.setAlphaComponent(
-            ContextCompat.getColor(context, R.color.chart_line),
-            45,
-        )
         if (width <= 0 || height <= 0 || values.isEmpty()) return
 
         val pad = 12f * resources.displayMetrics.density

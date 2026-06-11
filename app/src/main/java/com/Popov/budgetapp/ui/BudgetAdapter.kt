@@ -15,16 +15,23 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class BudgetAdapter(
+    private val currentUid: () -> String,
     private val onSelect: (Budget) -> Unit,
-    private val onDelete: (Budget) -> Unit
+    private val onEdit: (Budget) -> Unit,
+    private val onInvite: (Budget) -> Unit,
+    private val onDelete: (Budget) -> Unit,
+    private val onLeave: (Budget) -> Unit,
 ) : RecyclerView.Adapter<BudgetAdapter.BudgetViewHolder>() {
 
     private val items = mutableListOf<Budget>()
+    private var balances: Map<String, Double> = emptyMap()
+    private var selectedId: String = ""
 
-    @Suppress("UNUSED_PARAMETER")
-    fun submitList(newItems: List<Budget>, selectedId: String) {
+    fun submitList(newItems: List<Budget>, selectedId: String, balancesByBudgetId: Map<String, Double> = emptyMap()) {
         items.clear()
         items.addAll(newItems)
+        this.selectedId = selectedId
+        balances = balancesByBudgetId
         notifyDataSetChanged()
     }
 
@@ -47,6 +54,14 @@ class BudgetAdapter(
             binding.ivBudgetIcon.setImageResource(iconByCategory(item.category))
             binding.tvParticipants.text = participantsLabel(item.members.size)
             binding.tvAmount.text = formatRub(item.limit)
+            val balance = balances[item.id] ?: 0.0
+            binding.tvBalance.text = formatSignedRub(balance)
+            val balanceColor = when {
+                balance > 0 -> ContextCompat.getColor(binding.root.context, R.color.income_text_green)
+                balance < 0 -> ContextCompat.getColor(binding.root.context, R.color.danger)
+                else -> ContextCompat.getColor(binding.root.context, R.color.text_primary)
+            }
+            binding.tvBalance.setTextColor(balanceColor)
 
             val palette = paletteFor(item.category)
             applySolidColor(binding.root, palette.card)
@@ -54,14 +69,34 @@ class BudgetAdapter(
 
             binding.root.setOnClickListener { onSelect(item) }
             binding.btnBudgetMenu.setOnClickListener { anchor ->
+                val uid = currentUid()
+                val isOwner = item.isOwner(uid)
+                val isMember = uid.isNotBlank() && uid in item.members
                 PopupMenu(anchor.context, anchor).apply {
                     inflate(R.menu.budget_item_menu)
+                    menu.findItem(R.id.action_edit_budget).isVisible = isOwner
+                    menu.findItem(R.id.action_invite_members).isVisible = isOwner
+                    menu.findItem(R.id.action_leave_budget).isVisible = isMember && !isOwner
+                    menu.findItem(R.id.action_delete_budget).isVisible = isOwner
                     setOnMenuItemClickListener { menuItem ->
-                        if (menuItem.itemId == R.id.action_delete_budget) {
-                            onDelete(item)
-                            true
-                        } else {
-                            false
+                        when (menuItem.itemId) {
+                            R.id.action_edit_budget -> {
+                                onEdit(item)
+                                true
+                            }
+                            R.id.action_invite_members -> {
+                                onInvite(item)
+                                true
+                            }
+                            R.id.action_leave_budget -> {
+                                onLeave(item)
+                                true
+                            }
+                            R.id.action_delete_budget -> {
+                                onDelete(item)
+                                true
+                            }
+                            else -> false
                         }
                     }
                     show()
@@ -118,6 +153,17 @@ class BudgetAdapter(
             val n = kotlin.math.round(amount).toLong()
             val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
             return "${nf.format(n)} ₽"
+        }
+
+        private fun formatSignedRub(amount: Double): String {
+            val n = kotlin.math.round(amount).toLong()
+            val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
+            val sign = when {
+                n > 0 -> "+"
+                n < 0 -> "−"
+                else -> ""
+            }
+            return "$sign${nf.format(kotlin.math.abs(n))} ₽"
         }
     }
 
